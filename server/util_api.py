@@ -2,7 +2,7 @@ from flask import request
 from flask_restful import Resource
 
 from util import dict_get
-from model.mongo_util import drop_db
+from model.mongo_util import MongoUtil
 
 class UtilApi(Resource):
     def post(self):
@@ -15,7 +15,7 @@ class UtilApi(Resource):
         try:
             if action == 'drop_database':
                 action_name = 'dropping MongoDB database'
-                drop_db()
+                MongoUtil.drop_db()
         except Exception as e:
             success = False
             error = 'Error when %s : %s' % (action_name, e)
