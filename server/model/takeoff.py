@@ -8,14 +8,31 @@ from .image_util import ImageUtil
 
 
 class Takeoff:
+    """
+    Class to contain all Takeoff relaetd operations
+    """
+
     @staticmethod
     def create_from_file(filename, content):
+        """
+        Creates new takeoff from the image file.
+
+        :param string filename: name of the Takeoff file
+        :param string content: Base64 encoded file content
+        :return: created TakeOff object
+        """
         takeoff = Takeoff(str(MongoUtil.get_new_id('Takeoff')), filename, content)
         takeoff._add()
         return takeoff
 
     @staticmethod
     def get_status(takeoff_id):
+        """
+        Returns Takeoff status information
+
+        :param string takeoff_id: ID of the takeoff
+        :return: list of dictionaries with status information
+        """
         doc = MongoUtil.takeoff_collection().find_one(
             {
                 '_id': takeoff_id
@@ -25,10 +42,13 @@ class Takeoff:
                 '_id': 0
             }
         )
-        if doc is None: return None
+        if doc is None:
+            return None
 
         status = doc['step_status']
 
+        # Convert database status sattus info into the API-style status info
+        # Checks if DB complete_at datetime is in the past and sets loading/loaded/message accordingly
         now = datetime.datetime.now().timestamp()
         result = []
         for step in status:
@@ -47,10 +67,25 @@ class Takeoff:
 
     @staticmethod
     def get_pages(takeoff_id):
+        """
+        Returns Takeoff pages.
+
+        :param string takeoff_id: ID of the takeoff
+        :return: list of dictionaries with page information (page_number, page_data, bboxes)
+        or None if no takeoff found
+        """
         return Takeoff._get_list(takeoff_id, 'pages', ['pages'])
 
     @staticmethod
     def set_takeoff_page_bboxes(takeoff_id, page_number, bboxes):
+        """
+        Sets Takeoff page bboxes.
+
+        :param string takeoff_id: ID of the takeoff
+        :param int page_number: number of page to set bboxes for
+        :param list bboxes: bboxes to set (list of [x, y, w, h] lists)
+        :return: {'success': True} or None if takeoff or page not found
+        """
         return Takeoff.set_array_element(
             takeoff_id,
             'bboxes',
@@ -61,6 +96,13 @@ class Takeoff:
 
     @staticmethod
     def get_floor_plans(takeoff_id):
+        """
+        Returns Takeoff floor plans.
+
+        :param string takeoff_id: ID of the takeoff
+        :return: list of dictionaries with floor plan information (floor_plan_number, plan, tiled_area)
+        or None if no takeoff found
+        """
         return Takeoff._get_list(
             takeoff_id,
             'floor_plans',
@@ -69,6 +111,14 @@ class Takeoff:
 
     @staticmethod
     def set_takeoff_floor_plan_tiled_mask(takeoff_id, floor_plan_number, tiled_mask):
+        """
+        Sets Takeoff floor plan tiled mask.
+
+        :param string takeoff_id: ID of the takeoff
+        :param int floor_plan_number: number of floor plan to set the tiled mask for
+        :param string tiled_mask: floor plan tiled_mask (Base54-encoded B&W image)
+        :return: {'success': True} or None if takeoff or floor plan not found
+        """
         return Takeoff.set_array_element(
             takeoff_id,
             'tiled_mask',
@@ -78,6 +128,13 @@ class Takeoff:
         )
 
     def __init__(self, takeoff_id, filename, content):
+        """
+        Constructor.
+
+        :param string takeoff_id:
+        :param string filename: name of the Takeoff file
+        :param string content: Base64 encoded file content
+        """
         self.takeoff_id = takeoff_id
         self.filename = filename
         self.content = content
@@ -87,6 +144,9 @@ class Takeoff:
         self.floor_plan_counter = 0
 
     def _add(self):
+        """
+        Adds Takeoff to MongoDB takeoff collection
+        """
         self._generate_step_status()
         self._extract_pages()
         self._generate_floor_plans()
@@ -105,6 +165,10 @@ class Takeoff:
         )
 
     def _extract_pages(self):
+        """
+        Extract pages from the Takeoff file.
+        Uses dummy implementation of creating 4 pages with rotated version of an original image.
+        """
         image_pages = ImageUtil.extract_pages(self.content)
         self.pages.clear()
         for i in range(0, len(image_pages)):
@@ -117,6 +181,9 @@ class Takeoff:
             )
 
     def _generate_floor_plans(self):
+        """
+        Generates floor plans for each page.
+        """
         self.floor_plans.clear()
         for page in self.pages:
             page_number = page['page_number']
@@ -137,11 +204,17 @@ class Takeoff:
                     }
                 )
 
+                """
                 plan_image.save('%s/%s_%s_%s.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
                 tiled_mask.save(
                     '%s/%s_%s_%s_mask.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
+                """
 
     def _generate_step_status(self):
+        """
+        Generates steps fot the Takeoff.
+        Uses dummy implementation by setting a complete_at datetime field few seconds in the future.
+        """
         steps = ['Extracting Floor Plans', 'Calculating Tiled Area']
         self.step_status.clear()
         time_to_complete = 1
@@ -157,6 +230,14 @@ class Takeoff:
 
     @staticmethod
     def _get_list(takeoff_id, array_field_name, fields_to_return):
+        """
+        Returns list of Takeoff child objects.
+
+        :param string takeoff_id: ID of the takeoff
+        :param string array_field_name: name of the Takeoff array field to return the data from
+        :param list fields_to_return: list of fields to return (in MongoDb format)
+        :return: list of Takeoff child objects or None if Takeoff not found
+        """
         output_fields = {'_id': 0}
         for field_name in fields_to_return:
             output_fields[field_name] = 1
@@ -167,7 +248,8 @@ class Takeoff:
             },
             output_fields
         )
-        if doc is None: return None
+        if doc is None:
+            return None
 
         result = doc[array_field_name]
         return result
@@ -180,6 +262,16 @@ class Takeoff:
             array_key_name,
             array_key_value
     ):
+        """
+        Updates array element field for the given Takeoff.
+
+        :param string takeoff_id: ID of the takeoff
+        :param string array_field_name: name of the Takeoff array field to update element in
+        :param object value_to_set: value to set
+        :param string array_key_name: name of the key field in the array element objects (the one to search for)
+        :param object array_key_value: value to search for in the array elements
+        :return: {'success': True} or None if takeoff or an array element not found
+        """
         doc = MongoUtil.takeoff_collection().update_one(
             {
                 '_id': takeoff_id
@@ -193,8 +285,10 @@ class Takeoff:
                 }
             ]
         )
-        if doc is None: return None
-        if doc.matched_count != 1 and doc.modified_count == 0: return None
+        if doc is None:
+            return None
+        if doc.matched_count != 1 and doc.modified_count == 0:
+            return None
 
         return {
             'success': True
