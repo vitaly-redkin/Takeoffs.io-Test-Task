@@ -4,3 +4,5 @@ MONGO_CONNECTION_STRING='mongodb://localhost:27017/'
 MONGO_DATABASE_NAME='takeoff'
 
 TEST_FILES_FOLDER='test_files/'
+
+DEBUG_OUTPUT_FOLDER='d:/temp/777'

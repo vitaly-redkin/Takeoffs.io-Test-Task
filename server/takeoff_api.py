@@ -10,4 +10,4 @@ class TakeoffApi(Resource):
         filename = dict_get(json_data, 'filename', '')
         content = dict_get(json_data, 'content', '')
         takeoff = Takeoff.create_from_file(filename, content)
-        return {'takeoff_id': takeoff.id}
+        return {'takeoff_id': takeoff.takeoff_id}
