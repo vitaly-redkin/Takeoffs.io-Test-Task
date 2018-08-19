@@ -22,7 +22,7 @@ class AppHeader extends React.Component<RouteComponentDummyProps> {
         {this.props.location.pathname !== AppRoutes.TakeoffNew &&
         <Nav className='app-header-right'>
           <div>
-            <Button onClick={this.redirectToTakeoffNew}>Create New Takeoff</Button>
+            <Button onClick={this.redirectToTakeoffNew} size='sm'>Create New Takeoff</Button>
           </div>
         </Nav>
         }

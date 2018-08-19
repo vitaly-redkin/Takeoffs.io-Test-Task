@@ -42,7 +42,7 @@ class TakeoffCreator extends React.PureComponent<{}, ITakeOffCreatorState> {
                  onChange={this.onFileSelected}
           />
           <p>Submit plan image file (PNG, GIF or JPEG) for evaluation</p>
-          <Button onClick={this.createNewTakeoff}>Submit Plan</Button>
+          <Button onClick={this.createNewTakeoff} size='sm'>Submit Plan</Button>
         </FormGroup>
       </Jumbotron>
     );

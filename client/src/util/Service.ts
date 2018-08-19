@@ -32,13 +32,20 @@ export class Service {
                     headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
                 }
             )
-            .then(async (response) => response.json())
+            .then(async (response) =>  { 
+                if (response.ok || response.status === 400) {
+                    return response.json();
+                  } else {
+                    return {error: `Request rejected with status ${response.status}`};
+                  }
+                 }
+            )
             .catch((error: Error) => { onError(error); })
             .then((response: TResult | FetchError) => { 
                 if (response) {
                     // tslint:disable
                     if ('_error' in (response as any)) {
-                        onError(new Error((response as FetchError)._error));
+                    onError(new Error((response as FetchError)._error));
                     } else {
                         onSuccess(response as TResult); 
                     }

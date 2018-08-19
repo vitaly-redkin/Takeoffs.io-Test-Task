@@ -63,9 +63,12 @@ def handle_root_exception(error):
     """
     Return a error description and 400 status code
     """
+    code = 400
+    if hasattr(error, 'code'):
+        code = error.code
     d = dict(_error=str(error))
     s = json.dumps(d)
-    return (s, 400, [('Content-Type', 'application/json')])
+    return (s, code, [('Content-Type', 'application/json')])
 
 
 if __name__ == '__main__':
