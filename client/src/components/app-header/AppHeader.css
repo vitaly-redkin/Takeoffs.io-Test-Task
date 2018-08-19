@@ -1,0 +1,33 @@
+.app-header
+{
+    background-color: #222;
+}
+
+.app-header-left
+{
+    width: 20%;
+}
+
+.app-header-title
+{
+    color: white;
+    width: 60%;
+    vertical-align: bottom;
+}
+
+.app-header-title h2
+{
+    text-align: center;
+    width: 100%;
+}
+
+.app-header-right
+{
+    width: 20%;
+}
+
+.app-header-right div
+{
+    text-align: right;
+    width: 100%;
+}
