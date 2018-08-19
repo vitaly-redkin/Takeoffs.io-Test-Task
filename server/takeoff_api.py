@@ -17,11 +17,14 @@ class TakeoffApi(base_api.BaseApi):
 
         :return: {'takeoff_id': takeoff_id} dictionary
         """
+
         json_data = request.get_json(force=True)
         filename = dict_get(json_data, 'filename', '')
         content = dict_get(json_data, 'content', '')
         takeoff = Takeoff.create_from_file(filename, content)
         return {'takeoff_id': takeoff.takeoff_id}
+
+        #return {'takeoff_id': 1}
 
     def get(self, takeoff_id):
         """

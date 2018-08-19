@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api
+from flask_cors import CORS
+import json
 
 from takeoff_api import TakeoffApi
 from takeoff_page_api import TakeoffPageApi
@@ -7,6 +9,7 @@ from takeoff_floor_plan_api import TakeoffFloorPlanApi
 from util_api import UtilApi
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_pyfile('config.py')
 api = Api(app)
 
@@ -53,6 +56,17 @@ api.add_resource(TakeoffPageApi, *takeoff_page_routes)
 api.add_resource(TakeoffFloorPlanApi, *takeoff_floor_plan_routes)
 api.add_resource(UtilApi, '/util')
 api.add_resource(HelloWorld, '/')
+
+
+@app.errorhandler(Exception)
+def handle_root_exception(error):
+    """
+    Return a error description and 400 status code
+    """
+    d = dict(_error=str(error))
+    s = json.dumps(d)
+    return (s, 400, [('Content-Type', 'application/json')])
+
 
 if __name__ == '__main__':
     app.run(debug=True)

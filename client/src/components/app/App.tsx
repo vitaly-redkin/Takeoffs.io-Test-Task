@@ -9,9 +9,13 @@ class App extends React.Component {
   public render() {
     return (
       <BrowserRouter>
-        <div className='App'>
-          <AppHeader />
-          <Routes />
+        <div>
+          <div className='app-header-contaner'>
+            <AppHeader />
+          </div>
+          <div>
+            <Routes />
+          </div>
         </div>
         </BrowserRouter>
     );
