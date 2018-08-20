@@ -3,6 +3,7 @@
  */
 
 import { Consts } from './Consts';
+import { ImageSize } from './CommonTypes';
 
 /**
  * Checks if the file has a valid MIME type
@@ -28,6 +29,16 @@ export function stripBase64ImagePrefix(content: string): string {
   } else {
     return content;
   }
+}
+
+/**
+ * Adds prefix to Base64 encoded file content.
+ * 
+ * @param content Base64-encoded string without prefix
+ * @returns Base64-encoded string with prefix
+ */
+export function addBase64ImagePrefix(content: string): string {
+  return `data:image/png;base64,${content}`;
 }
 
 /**
@@ -59,4 +70,22 @@ function accepts(file: File, acceptedFiles: string): boolean {
   }
 
   return true;
+}
+
+/**
+ * Returns promise with the give image size.
+ * 
+ * @param base64 Base64 encoded PNG image (with prefix)
+ * @returns promise with the give image size
+ */
+export async function getImageSize(base64: string): Promise<ImageSize> {
+  const src: string = addBase64ImagePrefix(base64);
+
+  return new Promise<ImageSize> ((resolved: Function) => {
+    const img = new Image();
+    img.onload = () => {
+      resolved({width: img.width, height: img.height});
+    };
+    img.src = src;
+  });
 }

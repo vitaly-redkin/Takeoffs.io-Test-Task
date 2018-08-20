@@ -1,0 +1,12 @@
+.takeoff-floor-plan-svg
+{
+    border: 2px dashed #30A8F9;
+    flex-grow: 1;
+    width: 100%;
+    cursor: crosshair;
+}
+
+.takeoff-floor-plan-image
+{
+ /*   width: 100%; */
+}

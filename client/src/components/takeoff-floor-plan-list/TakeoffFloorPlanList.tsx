@@ -7,8 +7,9 @@ import { withRouter } from 'react-router-dom';
 import { Button, Container, Card, CardBody, CardHeader, Row, Col } from 'reactstrap';
 
 import { AppRoutes, composeTakeOffPath } from '../../util/AppRoutes';
-import { BaseTakeoffComponent } from '../base-takeoff-component/BaseTakeoffComponent';
 import { Service, ITakeoffFloorPlanResponseJson } from '../../util/Service';
+import { BaseTakeoffComponent } from '../base-takeoff-component/BaseTakeoffComponent';
+import TakeoffFloorPlan from '../takeoff-floor-plan/TakeoffFloorPlan';
 
 import './TakeoffFloorPlanList.css';
 
@@ -67,9 +68,11 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
   private renderList(): JSX.Element {
     if (this.state && this.state.data !== null && this.state.data.length > 0) {
       return (
-        <div>
-          {JSON.stringify(this.state.data)}}          
-        </div>
+        <Container className='pl-0 pr-0 mw-100'>
+          {this.state.data.map((plan: ITakeoffFloorPlanResponseJson) => (
+            <TakeoffFloorPlan key={plan.page_number} plan={plan} takeoffId={this.takeoffId} />
+          ))}
+        </Container>
       );
     } else {
       return (
