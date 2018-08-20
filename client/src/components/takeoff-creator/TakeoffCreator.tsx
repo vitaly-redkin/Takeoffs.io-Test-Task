@@ -11,16 +11,12 @@ import { RouteComponentDummyProps } from '../../util/CommonTypes';
 import { Consts } from '../../util/Consts';
 import { acceptFile, stripBase64ImagePrefix } from '../../util/Util';
 import { Service, IUploadFileResponseJson, IUtilResponseJson } from '../../util/Service';
-import LoadingPanel from '../loading-panel/LoadingPanel';
+import { BaseProcessor, IBaseProcessorState } from '../base-processor/BaseProcessor';
 
 import './TakeoffCreator.css';
 
 // Component state
-interface ITakeOffCreatorState {
-   // true if we are processing something now.
-  isProcessing: boolean;
-  // Name of the current operation.
-  operationName: string | null;
+interface ITakeOffCreatorState extends IBaseProcessorState {
   // Selected file
   file:
     {
@@ -31,26 +27,20 @@ interface ITakeOffCreatorState {
     } | undefined;
 }
 
-class TakeoffCreator extends React.PureComponent<RouteComponentDummyProps, ITakeOffCreatorState> {
+class TakeoffCreator extends BaseProcessor<RouteComponentDummyProps, ITakeOffCreatorState> {
   /**
    * Called when component is mounted. 
    * Sets an initial state.
    */
   public componentDidMount() {
-    this.setState({file: undefined, isProcessing: false});
+    super.componentDidMount();
+    this.setState({file: undefined});
   }
 
-  public render(): JSX.Element | null {
-    if (!this.state) {
-      return null;
-    }
-
-    if (this.state.isProcessing) {
-      return (
-        <LoadingPanel message={`${this.state.operationName}...`} />
-      );
-    }
-
+  /**
+   * Renders "real" component content.
+   */
+  public renderInternal(): JSX.Element | null {
     return (
       <React.Fragment>
         <Jumbotron className='m-4 pt-4 pb-4'>
@@ -181,33 +171,6 @@ class TakeoffCreator extends React.PureComponent<RouteComponentDummyProps, ITake
    */
   private onDatabaseCleanUpFailed = (error: Error): void => {
     this.onServiceCallFailed(error);
-  }
-
-  /**
-   * Called when service call failed.
-   * 
-   * @param error Error details
-   */
-  private onServiceCallFailed = (error: Error): void => {
-    console.log(error);
-    alert(`Error occurred when ${this.state.operationName}. Check console for details.`);
-    this.stopProcessing();
-  }
-
-  /**
-   * Updates the component state for started processing.
-   * 
-   * @param operationName Name of the current operation
-   */
-  private startProcessing = (operationName: string): void => {
-    this.setState({isProcessing: true, operationName});
-  }
-
-  /**
-   * Updates the component state for stopped processing.
-   */
-  private stopProcessing = (): void => {
-    this.setState({isProcessing: false, operationName: null});
   }
 }
 
