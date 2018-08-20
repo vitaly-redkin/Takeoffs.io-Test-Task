@@ -1,3 +1,5 @@
+import { composeTakeOffPath } from '../util/AppRoutes';
+
 /**
  * Service class.
  * Mainly encapsulaets API calls.
@@ -46,6 +48,27 @@ export class Service {
     }
 
     /**
+     * Calls API to clean up the database.
+     * 
+     * @param takeoffId function to call on success
+     * @param onSuccess function to call on success
+     * @param onError function to call on error
+     */
+    public getTakeoffStatus(
+        takeoffId: string,
+        onSuccess: Function,
+        onError: Function
+    ): void {
+        const endpoint: string = composeTakeOffPath('/status/:takeoffId', takeoffId);
+        this.callApi<{}, [ITakeoffStatusStepResponseJson]>(
+            endpoint,
+            'GET',
+            null,
+            onSuccess,
+            onError);        
+    }
+
+    /**
      * Calls API.
      * 
      * @param endpoint API endpoint to call
@@ -57,7 +80,7 @@ export class Service {
     private callApi<TPayload, TResult>(
         endpoint: string,
         method: string,
-        data: TPayload,
+        data: TPayload | null,
         onSuccess: Function,
         onError: Function
     ): void {
@@ -68,7 +91,7 @@ export class Service {
                 {
                     method: method,
                     mode: 'cors',
-                    body: JSON.stringify(data),
+                    body: (data === null ? null : JSON.stringify(data)),
                     headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
                 }
             )
@@ -144,4 +167,14 @@ export interface IUtilResponseJson {
  */
 interface IUtilPayload {
     action: string;
+}
+
+/**
+ * Interface for the /status/:takeoff_id end point JSON response ARRAY ELEMENT.
+ */
+export interface ITakeoffStatusStepResponseJson {
+    step_name: string;
+    loading: boolean;
+    loaded: boolean;
+    message: boolean;
 }

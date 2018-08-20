@@ -10,6 +10,7 @@ export enum AppRoutes {
   TakeoffStatus = '/takeoff/:takeoffId/',
   TakeoffFloorPlans = '/takeoff/:takeoffId/floor_plans',
   TakeoffTiledAreas = '/takeoff/:takeoffId/tiledAreas',
+  TakeoffComplete = '/takeoff/:takeoffId/complete',
 }
   
 /**
@@ -17,6 +18,6 @@ export enum AppRoutes {
  * 
  * @param takeoffId ID of the takeoff to compose path for
  */
-export function composeTakeOffPath(path: AppRoutes, takeoffId: string): string {
-  return path.replace('/:takeoffId/', `/${takeoffId}/`);
+export function composeTakeOffPath(path: string, takeoffId: string): string {
+  return path.replace('/:takeoffId', `/${takeoffId}`);
 }

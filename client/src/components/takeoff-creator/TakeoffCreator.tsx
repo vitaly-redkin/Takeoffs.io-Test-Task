@@ -16,7 +16,7 @@ import { BaseProcessor, IBaseProcessorState } from '../base-processor/BaseProces
 import './TakeoffCreator.css';
 
 // Component state
-interface ITakeOffCreatorState extends IBaseProcessorState {
+interface ITakeoffCreatorState extends IBaseProcessorState {
   // Selected file
   file:
     {
@@ -27,7 +27,7 @@ interface ITakeOffCreatorState extends IBaseProcessorState {
     } | undefined;
 }
 
-class TakeoffCreator extends BaseProcessor<RouteComponentDummyProps, ITakeOffCreatorState> {
+class TakeoffCreator extends BaseProcessor<RouteComponentDummyProps, ITakeoffCreatorState> {
   /**
    * Called when component is mounted. 
    * Sets an initial state.
