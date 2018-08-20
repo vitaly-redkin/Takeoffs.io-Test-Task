@@ -29,6 +29,9 @@ export class BaseProcessor<TProps, TState extends IBaseProcessorState>
     this.setState({isProcessing: false});
   }
 
+  /**
+   * Renders component.
+   */
   public render(): JSX.Element | null {
     if (this.state && this.state.isProcessing) {
       return (

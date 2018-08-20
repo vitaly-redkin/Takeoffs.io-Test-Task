@@ -1,5 +1,5 @@
 /**
- * Base component for the takeoff editors.
+ * Base component for the takeoff components.
  * 
  * I know Component inheritance is "frown upon" by Facebook 
  * but it is a simplest way to go in this case.
@@ -13,7 +13,7 @@ interface ITakeoffState<TData> extends IBaseProcessorState {
   data: TData | null;
 }
 
-export class BaseTakeoffEditor<TData> extends BaseProcessor<TakeoffRouteProps, ITakeoffState<TData>> {
+export class BaseTakeoffComponent<TData> extends BaseProcessor<TakeoffRouteProps, ITakeoffState<TData>> {
 
   /**
    * Called when component is mounted. 

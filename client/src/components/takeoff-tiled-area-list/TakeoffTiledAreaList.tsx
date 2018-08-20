@@ -9,11 +9,11 @@ import { Jumbotron, Button } from 'reactstrap';
 import { AppRoutes, composeTakeOffPath } from '../../util/AppRoutes';
 import { RouteComponentDummyProps } from '../../util/CommonTypes';
 
-class TakeoffTiledAreaEditor extends React.PureComponent<RouteComponentDummyProps> {
+class TakeoffTiledAreaList extends React.PureComponent<RouteComponentDummyProps> {
   public render(): JSX.Element | null {
     return (
       <Jumbotron className='m-4 pt-4 pb-4'>
-        <h4>Takeoff Tiled Area Editor</h4>
+        <h4>Takeoff Tiled Area List</h4>
         <hr/>
         <h6 className='pb-2'>Tiled area are defined?</h6>
         <Button onClick={this.redirectToTakeoffComplete} size='sm'>Complete Takeoff</Button>
@@ -34,4 +34,4 @@ class TakeoffTiledAreaEditor extends React.PureComponent<RouteComponentDummyProp
   }
 }
 
-export default withRouter(TakeoffTiledAreaEditor);
+export default withRouter(TakeoffTiledAreaList);

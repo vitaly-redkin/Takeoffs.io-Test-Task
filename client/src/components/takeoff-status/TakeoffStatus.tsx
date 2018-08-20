@@ -6,11 +6,11 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { Jumbotron, Button } from 'reactstrap';
 
-import { BaseTakeoffEditor } from '../base-takeoff-editor/BaseTakeoffEditor';
+import { BaseTakeoffComponent } from '../base-takeoff-component/BaseTakeoffComponent';
 import { Service, ITakeoffStatusStepResponseJson } from '../../util/Service';
 import { AppRoutes, composeTakeOffPath } from '../../util/AppRoutes';
 
-class TakeoffStatus extends BaseTakeoffEditor<[ITakeoffStatusStepResponseJson]> {
+class TakeoffStatus extends BaseTakeoffComponent<[ITakeoffStatusStepResponseJson]> {
 
   private refreshDataInterval: number | undefined;
 
@@ -58,9 +58,9 @@ class TakeoffStatus extends BaseTakeoffEditor<[ITakeoffStatusStepResponseJson]> 
         </ul>
         <hr/>
         {floorsReady && 
-         <Button onClick={this.redirectToTakeoffFloorPlanEditor} size='sm' className='mr-2'>Review Floor Plans</Button>}
+         <Button onClick={this.redirectToTakeoffFloorPlanList} size='sm' className='mr-2'>Review Floor Plans</Button>}
         {tiledAreasReady && 
-         <Button onClick={this.redirectToTakeoffTiledAreaEditor} size='sm' className='mr-2'>Review Tiled Areas</Button>}
+         <Button onClick={this.redirectToTakeoffTiledAreaList} size='sm' className='mr-2'>Review Tiled Areas</Button>}
         {floorsReady && tiledAreasReady &&
          <Button onClick={this.redirectToTakeoffComplete} size='sm' className='mr-2'>Complete This Takeoff</Button>}
       </Jumbotron>
@@ -133,17 +133,17 @@ class TakeoffStatus extends BaseTakeoffEditor<[ITakeoffStatusStepResponseJson]> 
   }
 
   /**
-   * Redirects to the "Takeoff Floor Plan Editor" page.
+   * Redirects to the "Takeoff Floor Plan List" page.
    */
-  private redirectToTakeoffFloorPlanEditor = () => {
+  private redirectToTakeoffFloorPlanList = () => {
     const url: string = composeTakeOffPath(AppRoutes.TakeoffFloorPlans, this.takeoffId);
     this.props.history.push(url);
   }
 
   /**
-   * Redirects to the "Takeoff Tiled Area Editor" page.
+   * Redirects to the "Takeoff Tiled Area List" page.
    */
-  private redirectToTakeoffTiledAreaEditor = () => {
+  private redirectToTakeoffTiledAreaList = () => {
     const url: string = composeTakeOffPath(AppRoutes.TakeoffTiledAreas, this.takeoffId);
     this.props.history.push(url);
   }

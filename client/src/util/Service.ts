@@ -48,7 +48,7 @@ export class Service {
     }
 
     /**
-     * Calls API to clean up the database.
+     * Calls API to get Takeoff status.
      * 
      * @param takeoffId function to call on success
      * @param onSuccess function to call on success
@@ -69,7 +69,28 @@ export class Service {
     }
 
     /**
-     * Calls API.
+     * Calls API to get Takeoff floor plans.
+     * 
+     * @param takeoffId function to call on success
+     * @param onSuccess function to call on success
+     * @param onError function to call on error
+     */
+    public getTakeoffFloorPlans(
+        takeoffId: string,
+        onSuccess: Function,
+        onError: Function
+    ): void {
+        const endpoint: string = composeTakeOffPath('/status/:takeoffId/floor_plans', takeoffId);
+        this.callApi<{}, [ITakeoffFloorPlanResponseJson]>(
+            endpoint,
+            'GET',
+            null,
+            onSuccess,
+            onError);        
+    }
+
+    /**
+     * Calls a specified API endpoint.
      * 
      * @param endpoint API endpoint to call
      * @param method HTTP method to use (GET, POST, PUT, DELETE)
@@ -177,4 +198,13 @@ export interface ITakeoffStatusStepResponseJson {
     loading: boolean;
     loaded: boolean;
     message: boolean;
+}
+
+/**
+ * Interface for the /status/:takeoff_id/floor_plan end point JSON response ARRAY ELEMENT.
+ */
+export interface ITakeoffFloorPlanResponseJson {
+    page_number: number;
+    page_data: string;
+    bboxes: [[number]];
 }
