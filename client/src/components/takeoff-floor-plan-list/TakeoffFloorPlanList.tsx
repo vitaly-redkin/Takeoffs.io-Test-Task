@@ -23,7 +23,7 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
     }
 
     return (
-      <Container className='pt-2 pb-2 mw-100'>
+      <Container className='pt-2 pb-2 mw-100 takeoff_floor-plan-list-container'>
         <Card className='w-100 h-100'>
           <CardHeader className='pb-1'>
             <Row>
@@ -44,7 +44,7 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
               </Col>
             </Row>
           </CardHeader>
-          <CardBody>
+          <CardBody className='takeoff_floor-plan-list-cardbody'>
             {this.renderList()}
           </CardBody>
         </Card>

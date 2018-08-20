@@ -50,7 +50,7 @@ export class Service {
     /**
      * Calls API to get Takeoff status.
      * 
-     * @param takeoffId function to call on success
+     * @param takeoffId ID of the takeoff to use
      * @param onSuccess function to call on success
      * @param onError function to call on error
      */
@@ -71,7 +71,7 @@ export class Service {
     /**
      * Calls API to get Takeoff floor plans.
      * 
-     * @param takeoffId function to call on success
+     * @param takeoffId ID of the takeoff to use
      * @param onSuccess function to call on success
      * @param onError function to call on error
      */
@@ -85,6 +85,81 @@ export class Service {
             endpoint,
             'GET',
             null,
+            onSuccess,
+            onError);        
+    }
+
+    /**
+     * Calls API to update floor plan bboxes.
+     * 
+     * @param takeoffId ID of the takeoff to use
+     * @param pageNumber number of page to update data for
+     * @param bboxes array of bboxes to set
+     * @param onSuccess function to call on success
+     * @param onError function to call on error
+     */
+    public setTakeoffFloorPlanBboxes(
+        takeoffId: string,
+        pageNumber: number,
+        bboxes: [[number]],
+        onSuccess: Function,
+        onError: Function
+    ): void {
+        const endpoint: string = 
+            `${composeTakeOffPath('/status/:takeoffId/floor_plans', takeoffId)}/${pageNumber}`;
+        const data: ITakeoffFloorPlanPayload = {bboxes: bboxes};
+        this.callApi<ITakeoffFloorPlanPayload, IUpdateResponseJson>(
+            endpoint,
+            'PUT',
+            data,
+            onSuccess,
+            onError);        
+    }
+
+    /**
+     * Calls API to get Takeoff tiled areas.
+     * 
+     * @param takeoffId ID of the takeoff to use
+     * @param onSuccess function to call on success
+     * @param onError function to call on error
+     */
+    public getTakeoffTiledAreas(
+        takeoffId: string,
+        onSuccess: Function,
+        onError: Function
+    ): void {
+        const endpoint: string = composeTakeOffPath('/status/:takeoffId/tiled_areas', takeoffId);
+        this.callApi<{}, [ITakeoffTiledAreaResponseJson]>(
+            endpoint,
+            'GET',
+            null,
+            onSuccess,
+            onError);        
+    }
+
+    /**
+     * Calls API to update tiled area mask.
+     * 
+     * @param takeoffId ID of the takeoff to use
+     * @param floorPlanNumber number of floor plan to update data for
+     * @param tiledMask tiles mask to set
+     * @param onSuccess function to call on success
+     * @param onError function to call on error
+     */
+    public setTakeoffTiledAreaMask(
+        takeoffId: string,
+        floorPlanNumber: number,
+        tiledMask: string,
+        onSuccess: Function,
+        onError: Function
+    ): void {
+        const endpoint: string = 
+            `${composeTakeOffPath('/status/:takeoffId/tiledMasks', takeoffId)}/${floorPlanNumber}`;
+        const data: ITakeoffTiledAreaPayload = {tiled_mask: tiledMask};
+        this.callApi<ITakeoffTiledAreaPayload, IUpdateResponseJson>(
+            endpoint,
+            'PUT',
+            data,
             onSuccess,
             onError);        
     }
@@ -201,10 +276,40 @@ export interface ITakeoffStatusStepResponseJson {
 }
 
 /**
- * Interface for the /status/:takeoff_id/floor_plan end point JSON response ARRAY ELEMENT.
+ * Interface for the /status/:takeoff_id/floor_plan endpoint JSON response ARRAY ELEMENT.
  */
 export interface ITakeoffFloorPlanResponseJson {
     page_number: number;
     page_data: string;
     bboxes: [[number]];
+}
+
+/**
+ * Interface for PUT operation JSON responses.
+ */
+export interface IUpdateResponseJson {
+    success: boolean;
+}
+
+/**
+ * Interface for the /status/:takeoff_id/floor_plan/:page_number endpoint payload.
+ */
+interface ITakeoffFloorPlanPayload {
+    bboxes: [[number]];
+}
+
+/**
+ * Interface for the /status/:takeoff_id/tiled_area endpoint JSON response ARRAY ELEMENT.
+ */
+export interface ITakeoffTiledAreaResponseJson {
+    floor_plan_number: number;
+    plan: string;
+    tiled_mask: string;
+}
+
+/**
+ * Interface for the /status/:takeoff_id/tiled_mask/:page_plan_number endpoint payload.
+ */
+interface ITakeoffTiledAreaPayload {
+    tiled_mask: string;
 }
