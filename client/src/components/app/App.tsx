@@ -1,5 +1,9 @@
+/**
+ * Application "root" component.
+ */
 import * as React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+
 import AppHeader from '../app-header/AppHeader';
 import Routes from '../routes/Routes';
 

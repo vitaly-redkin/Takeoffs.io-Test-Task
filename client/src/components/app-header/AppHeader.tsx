@@ -1,3 +1,6 @@
+/**
+ * Application header component.
+ */
 import * as React from 'react';
 import { Navbar, NavbarBrand, Nav, Button } from 'reactstrap';
 import { withRouter } from 'react-router-dom';
@@ -30,6 +33,9 @@ class AppHeader extends React.Component<RouteComponentDummyProps> {
     );
   }
 
+  /**
+   * Redirects to the "Create New Takeoff" page.
+   */
   private redirectToTakeoffNew = () => {
     this.props.history.push(AppRoutes.TakeoffNew);
   }

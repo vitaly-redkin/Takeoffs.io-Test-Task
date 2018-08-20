@@ -23,12 +23,8 @@ class ImageUtil:
         """
         image = ImageUtil.image_from_base64(base64_content)
 
-        # "Original" image
-        bboxes = ImageUtil._generate_bboxes(image)
-        page = TakeoffPage(base64_content, bboxes)
-        result = [page]
-
-        rotations = [90, 180, 270]
+        result = []
+        rotations = [0, 90, 180, 270]
         for angle in rotations:
             rotated_image = image.rotate(angle, expand=1)
             rotated_base64 = ImageUtil.image_to_base64(rotated_image)

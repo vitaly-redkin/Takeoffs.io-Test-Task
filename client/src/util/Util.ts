@@ -2,7 +2,7 @@
  * Shared utility functions.
  */
 
-import {Consts} from './Consts';
+import { Consts } from './Consts';
 
 /**
  * Checks if the file has a valid MIME type
@@ -12,6 +12,22 @@ import {Consts} from './Consts';
  */
 export function acceptFile(file: File): boolean {
   return accepts(file, Consts.ACCEPTED_MIME_TYPES);
+}
+
+/**
+ * Removes prefix the FileReader class adds to Base64 encoded files.
+ * 
+ * @param content Base64-encoded string with prefix
+ * @returns Base64-encoded string without prefix
+ */
+export function stripBase64ImagePrefix(content: string): string {
+  const base64: string = ';base64,';
+  const index: number = content.indexOf(base64);
+  if (index > 0) {
+    return content.substring(index + base64.length);
+  } else {
+    return content;
+  }
 }
 
 /**
