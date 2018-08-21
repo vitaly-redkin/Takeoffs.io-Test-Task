@@ -73,8 +73,19 @@ class ImageUtil:
         :param PIL.Image image: Image to generate mask for
         :return: PIL.Image with mask (B&W image)
         """
-        w = image.width
-        h = image.height
+        return ImageUtil.generate_mask_by_rect(image.width, image.height)
+
+    @staticmethod
+    def generate_mask_by_rect(width, height):
+        """
+        Generates mask image for the dimensions
+
+        :param int width: mask width
+        :param int height: mask height
+        :return: PIL.Image with mask (B&W image)
+        """
+        w = width
+        h = height
         mask = Image.new('1', (w, h), 1)
 
         draw = ImageDraw.Draw(mask)

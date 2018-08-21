@@ -7,6 +7,7 @@ import unittest
 import config
 from api import app
 import util
+from model.image_util import ImageUtil
 
 
 class TestIntegrations(unittest.TestCase):
@@ -144,7 +145,8 @@ class TestIntegrations(unittest.TestCase):
             self.assertIsNotNone(takeoff_id, 'Takeoff ID should be returned')
 
             floor_plan_number = 1
-            new_tiled_mask = 'XXX'
+            mask_image = ImageUtil.generate_mask_by_rect(10, 10)
+            new_tiled_mask = ImageUtil.image_to_base64(mask_image)
             payload = dict(tiled_mask=new_tiled_mask)
             response = self.app.put(
                 '/status/%s/tiled_areas/%s' % (takeoff_id, floor_plan_number),
