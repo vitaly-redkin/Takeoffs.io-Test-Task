@@ -101,7 +101,7 @@ export class Service {
     public setTakeoffFloorPlanBboxes(
         takeoffId: string,
         pageNumber: number,
-        bboxes: [number][],
+        bboxes: number[][],
         onSuccess: Function,
         onError: Function
     ): void {
@@ -209,14 +209,22 @@ export class Service {
                     if ('_error' in (response as any)) {
                     onError(new Error((response as FetchError)._error));
                     } else {
-                        onSuccess(response as TResult); 
+                        if (onSuccess) {
+                            onSuccess(response as TResult);
+                        }
                     }
                     // tslint:enable
                 }
             })
-            .catch((error: Error) => { onError(error); });
+            .catch((error: Error) => { 
+                if (onError) {
+                    onError(error); 
+                }
+            });
         } catch (error) {
-            onError(error);
+            if (onError) {
+                onError(error);
+            }
         }
     }
 
@@ -281,7 +289,7 @@ export interface ITakeoffStatusStepResponseJson {
 export interface ITakeoffFloorPlanResponseJson {
     page_number: number;
     page_data: string;
-    bboxes: [number][];
+    bboxes: number[][];
 }
 
 /**
@@ -295,7 +303,7 @@ export interface IUpdateResponseJson {
  * Interface for the /status/:takeoff_id/floor_plan/:page_number endpoint payload.
  */
 interface ITakeoffFloorPlanPayload {
-    bboxes: [number][];
+    bboxes: number[][];
 }
 
 /**

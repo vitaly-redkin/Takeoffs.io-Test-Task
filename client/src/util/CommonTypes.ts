@@ -33,3 +33,11 @@ export interface ISize {
     width: number;
     height: number;
 }
+
+/**
+ * Geometric size.
+ */
+export interface IPoint {
+    x: number;
+    y: number;
+}

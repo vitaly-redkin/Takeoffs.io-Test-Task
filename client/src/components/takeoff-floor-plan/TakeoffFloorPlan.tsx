@@ -7,12 +7,12 @@ import { Card, CardBody, CardHeader } from 'reactstrap';
 import * as lodash from 'lodash';
 
 import { addBase64ImagePrefix, getImageSize } from '../../util/Util';
-import { ITakeoffFloorPlanResponseJson } from '../../util/Service';
+import { ITakeoffFloorPlanResponseJson, Service } from '../../util/Service';
 import { BaseProcessor, IBaseProcessorState } from '../base-processor/BaseProcessor';
 import SvgRect, { SvgRectData } from '../svg-rect/SvgRect';
 
 import './TakeoffFloorPlan.css';
-import { ISize } from '../../util/CommonTypes';
+import { ISize, IPoint } from '../../util/CommonTypes';
 
 // Component props
 interface ITakeoffFloorPlanProps {
@@ -25,11 +25,13 @@ interface ITakeoffFloorPlanState extends IBaseProcessorState {
   scale: number;
   svgWidth: string;
   svgHeight: string;
-  bboxes: [number][];
+  bboxes: number[][];
+  isInDrawing: boolean;
+  currentRect: IPoint[];
 }
 
 class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFloorPlanState> {
-//  private imageElement: SVGImageElement;
+  private svgElement: SVGElement;
   private containerDivElement: HTMLDivElement;
 
   /**
@@ -43,8 +45,10 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   public async componentDidMount() {
     super.componentDidMount();
 
-    window.addEventListener('resize', this.debouncedResizehandler);
     this.setState({bboxes: this.props.plan.bboxes});
+
+    window.addEventListener('resize', this.debouncedResizehandler);
+    document.addEventListener('mouseup', this.onMouseUp);
   }
 
   /**
@@ -52,6 +56,7 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
    */
   public componentWillUnmount() : void {
     window.removeEventListener('resize', this.debouncedResizehandler);
+    document.removeEventListener('mouseup', this.onMouseUp);
   }
 
   /**
@@ -83,65 +88,32 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
     return (
       <div ref={this.setContainerDivRef} className='w-100 text-center'>
         <svg className='takeoff-floor-plan-svg'
-             style={{width: this.state.svgWidth, height: this.state.svgHeight}}>
+             style={{width: this.state.svgWidth, height: this.state.svgHeight}}
+             ref={this.setSvgRef}
+             onMouseDown={this.onMouseDown} onMouseMove={this.onMouseMove}>
+             >
           <image className='takeoff-floor-plan-image' 
                   xlinkHref={addBase64ImagePrefix(this.props.plan.page_data)}
-                  ref={this.setImageRef}
                   style={{width: this.state.svgWidth, height: this.state.svgHeight}}
           />
 
           <svg>
            {rects.map((rect) => <SvgRect key={rect.rectId} {...rect} />)}
           </svg>
+
+          {this.renderCurrentRect()}
         </svg>
       </div>
     );
   }
 
   /**
-   * Composes array of SvgRectData objects by the floor plan bboxes.
-   */
-  private getSvgRectsByBbboxes = (): SvgRectData[] => {
-    const scale: number = this.state.scale;
-    if (scale === undefined) {
-      return [];
-    }
-
-    return this.state.bboxes.map<SvgRectData>((bbox: [number], index: number): SvgRectData => {
-      const onDeleteHandler: Function = 
-        (rectId: number) => { this.deleteBbox(rectId); };
-
-      return {
-        rectId: index,
-        x: bbox[0],
-        y: bbox[1],
-        w: bbox[2],
-        h: bbox[3],
-        scale: scale,
-        color: 'blue',
-        cursor: 'default',
-        onDeleteHandler: onDeleteHandler
-      };
-    });    
-  }
-
-  private deleteBbox = (rectId: number) => {
-    this.setState((prevState: ITakeoffFloorPlanState) => {
-      const newBboxes = prevState.bboxes.filter(
-        (_: [number], index: number): boolean => index !== rectId);
-
-      return {...prevState, bboxes: newBboxes};
-    });
-  }
-
-  /**
-   * Sets image element reference.
+   * Sets SVG element reference.
    * 
-   * @param imageElement image element to set reference to
+   * @param svgElement SVG element to set reference to
    */
-  private setImageRef = (imageElement: SVGImageElement): void => {
-//    this.imageElement = imageElement;
-//    this.setImageDimensions();
+  private setSvgRef = (svgElement: SVGSVGElement): void => {
+    this.svgElement = svgElement;
   }
 
   /**
@@ -155,7 +127,101 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   }
 
   /**
-   * Handler of the Resize event
+   * Composes array of SvgRectData objects by the floor plan bboxes.
+   */
+  private getSvgRectsByBbboxes = (): SvgRectData[] => {
+    const scale: number = this.state.scale;
+    if (scale === undefined) {
+      return [];
+    }
+
+    return this.state.bboxes.map<SvgRectData>((bbox: [number], index: number): SvgRectData => {
+      const x = Math.round(bbox[0] * scale);
+      const y = Math.round(bbox[1] * scale);
+      const w = Math.round(bbox[2] * scale);
+      const h = Math.round(bbox[3] * scale);
+  
+      const onDeleteHandler: Function = 
+        (rectId: number) => { this.deleteBbox(rectId); };
+
+      return {
+        rectId: index,
+        x: x,
+        y: y,
+        w: w,
+        h: h,
+        color: 'blue',
+        cursor: 'default',
+        onDeleteHandler: onDeleteHandler
+      };
+    });    
+  }
+
+  /**
+   * Renders rectangle we are drawing now.
+   */
+  private renderCurrentRect = (): JSX.Element | null => {
+    if (!this.state.currentRect || this.state.currentRect.length !== 2) {
+      return null;
+    }
+
+    const r: IPoint[] = this.state.currentRect;
+    const x: number = Math.min(r[0].x, r[1].x);
+    const y: number = Math.min(r[0].y, r[1].y);
+    const w: number = Math.abs(r[0].x - r[1].x);
+    const h: number = Math.abs(r[0].y - r[1].y);
+
+    const rect: SvgRectData = {
+      rectId: -1,
+      x: x,
+      y: y,
+      w: w,
+      h: h,
+      color: 'blue',
+      cursor: 'default',
+      onDeleteHandler: null
+    };
+
+    return (
+      <SvgRect {...rect} />
+    );
+  }
+
+  /**
+   * Calls service to update bboxes after change.
+   */
+  private updateBboxes = () => {
+    this.setState({operationName: 'Saving bboxes'});
+
+    new Service().setTakeoffFloorPlanBboxes(
+      this.props.takeoffId,
+      this.props.plan.page_number,
+      this.state.bboxes,
+      () => null,
+      this.onServiceCallFailed
+    );
+  }
+
+  /**
+   * Deletes bbox with the given index.
+   * 
+   * @param rectId - ID of the bbox rectangle (index in the bbox array)
+   */
+  private deleteBbox = (rectId: number) => {
+    this.setState(
+      (prevState: ITakeoffFloorPlanState) => {
+        const newBboxes: number[][] = prevState.bboxes.filter(
+          (_: number[], index: number): boolean => index !== rectId);
+        
+        return {...prevState, bboxes: newBboxes};
+      },
+      () => {
+        this.updateBboxes();
+      });
+  }
+
+  /**
+   * Handler of the Resize event888
    */
   private async onResizeHanler() {
     await this.setImageDimensions();
@@ -187,6 +253,122 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       svgWidth: `${width}px`,
       svgHeight: `${height}px`,
     });
+  }
+
+  /**
+   * MouseDown event handler. Starts drawing a new rectangle.
+   * 
+   * @param mouseEvent - event arguments. any type is used because svg element 
+   * requires MouseEvent<SVGElement> type and the compiler says MouseEvent 
+   * is not a genertic type.
+   */
+  //tslint:disable
+  private onMouseDown = (mouseEvent: any): void => {
+  //tslint:enable
+    if (mouseEvent.button !== 0) {
+        return;
+    }
+
+    if (!this.state.isInDrawing) {
+        const point: IPoint = this.convertToRelative(mouseEvent);
+
+        this.setState((prevState: ITakeoffFloorPlanState) => {
+          return {
+            ...prevState, 
+            isInDrawing: true, 
+            currentRect: [point]};
+        });
+    }
+  }
+
+  /**
+   * MouseUp event handler. Finishes new rectangle drawing.
+   * 
+   * @param mouseEvent - event arguments. any type is used because svg element 
+   * requires MouseEvent<SVGElement> type and the compiler says MouseEvent 
+   * is not a genertic type.
+   */
+  private onMouseUp = (mouseEvent: MouseEvent): void => {
+    if (mouseEvent.button !== 0) {
+        return;
+    }
+
+    let bboxAdded = false;
+    if (this.state.isInDrawing &&
+        (this.state.currentRect.length === 2)) {
+      const scale: number = this.state.scale;
+      const r: IPoint[] = this.state.currentRect;
+      const x: number = Math.round(Math.min(r[0].x, r[1].x) / scale);
+      const y: number = Math.round(Math.min(r[0].y, r[1].y) / scale);
+      const w: number = Math.round(Math.abs(r[0].x - r[1].x) / scale);
+      const h: number = Math.round(Math.abs(r[0].y - r[1].y) / scale);
+
+      // Check if added bbox is large enough
+      // Helps to avoid "new rectangle iis added when a delete icon for existing one clicked" mess
+      if (w > 2 && h > 2) {
+        bboxAdded = true;
+
+        this.setState(
+          (prevState: ITakeoffFloorPlanState) => {
+            const newBbox = [x, y, w, h];
+            const newBboxes = prevState.bboxes.concat([newBbox]);
+
+            return {
+              ...prevState, 
+              bboxes: newBboxes,
+              isInDrawing: false, 
+              currentRect: []};
+            },
+          () => {
+            this.updateBboxes();
+          });
+      }
+    }
+
+    if (!bboxAdded) {
+      this.setState((prevState: ITakeoffFloorPlanState) => {
+        return {
+          ...prevState, 
+          isInDrawing: false, 
+          currentRect: []};
+      });
+    }
+  }
+
+  /**
+   * MouseMove event handler.
+   * 
+   * @param mouseEvent - event arguments. any type is used because svg element 
+   * requires MouseEvent<SVGElement> type and the compiler says MouseEvent 
+   * is not a genertic type.
+   */
+  //tslint:disable
+  private onMouseMove = (mouseEvent: any): void => {
+  //tslint:enable
+    if (this.state.isInDrawing) {
+      const point: IPoint = this.convertToRelative(mouseEvent);
+
+      this.setState((prevState: ITakeoffFloorPlanState) => {
+        return {
+          ...prevState, 
+          isInDrawing: true, 
+          currentRect: prevState.currentRect.slice(0, 1).concat(point)};
+      });
+    }
+  }
+
+  /**
+   * Converts mouse event cordinates to relative ones against SVG.
+   * 
+   * @param mouseEvent mouse event to get the coordinates from
+   */
+  private convertToRelative = (mouseEvent: MouseEvent): IPoint => {
+      const boundingRect = this.svgElement.getBoundingClientRect();
+
+      return {
+          x: mouseEvent.clientX - boundingRect.left,
+          y: mouseEvent.clientY - boundingRect.top,
+      };
   }
 }
 

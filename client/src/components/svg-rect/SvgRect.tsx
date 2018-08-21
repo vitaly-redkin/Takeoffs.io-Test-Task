@@ -12,7 +12,6 @@ export type SvgRectData = {
   y: number;
   w: number;
   h: number;
-  scale: number;
   color: string;
   cursor: string;
   onDeleteHandler: Function | null;
@@ -20,11 +19,10 @@ export type SvgRectData = {
 
 class SvgRect extends React.PureComponent<SvgRectData> {
   public render(): JSX.Element | null {
-    const scale = this.props.scale;
-    const x = Math.round(this.props.x * scale);
-    const y = Math.round(this.props.y * scale);
-    const w = Math.round(this.props.w * scale);
-    const h = Math.round(this.props.h * scale);
+    const x = this.props.x;
+    const y = this.props.y;
+    const w = this.props.w;
+    const h = this.props.h;
 
     return (
       <g>
