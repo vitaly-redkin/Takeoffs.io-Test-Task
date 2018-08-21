@@ -84,6 +84,19 @@ class ImageUtil:
         return mask
 
     @staticmethod
+    def convert_to_bw(color_base64):
+        """
+        Converts image to black and white (1 bit)
+
+        :param color_base64: color image encoded to Base64
+        :return: black and white (1 bit) image encoded to Base64
+        """
+        color_image = ImageUtil.image_from_base64(color_base64)
+        bw_image = color_image.convert(mode='1')
+        bw_base64 = ImageUtil.image_to_base64(bw_image)
+        return bw_base64
+
+    @staticmethod
     def image_from_base64(base64_content):
         """
         Converts Base64 string into image

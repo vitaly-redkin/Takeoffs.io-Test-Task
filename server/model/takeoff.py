@@ -119,11 +119,13 @@ class Takeoff:
         :param string tiled_mask: floor plan tiled_mask (Base54-encoded B&W image)
         :return: {'success': True} or None if takeoff or floor plan not found
         """
+        # JavaScript can only send 24bit PNG - it is better to convert it to B&W to save space
+        bw_tiled_mask = ImageUtil.convert_to_bw(tiled_mask)
         return Takeoff.set_array_element(
             takeoff_id,
             'floor_plans',
             'tiled_mask',
-            tiled_mask,
+            bw_tiled_mask,
             'floor_plan_number',
             floor_plan_number
         )
