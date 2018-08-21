@@ -1,9 +1,9 @@
-.takeoff_floor-plan-list-container
+.takeoff-floor-plan-list-container
 {
   height: calc(100vh - 90px);
 }
 
-.takeoff_floor-plan-list-cardbody
+.takeoff-floor-plan-list-cardbody
 {
   overflow: auto;
 }

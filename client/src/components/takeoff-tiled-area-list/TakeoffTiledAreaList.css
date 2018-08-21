@@ -1,0 +1,14 @@
+.takeoff-tiled-area-list-container
+{
+  height: calc(100vh - 90px);
+}
+
+.takeoff-tiled-area-list-cardbody
+{
+  overflow: auto;
+}
+
+.takeoff-tiled-area-description
+{
+  font-size: 0.8rem;
+}

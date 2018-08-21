@@ -1,7 +1,13 @@
-.takeoff-floor-plan-svg
+.takeoff-tiled-area-svg
 {
     border: 2px dashed #30A8F9;
     flex-grow: 1;
     width: 100%;
     cursor: crosshair;
+}
+
+
+.takeoff-tiled-area-description
+{
+  font-size: 0.8rem;
 }

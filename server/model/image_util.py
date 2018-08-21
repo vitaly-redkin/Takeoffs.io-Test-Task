@@ -1,6 +1,6 @@
 import io
 import base64
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import util
 import config
@@ -45,10 +45,10 @@ class ImageUtil:
         """
         w = image.width
         h = image.height
-        bw = round(w / 5)
-        bh = round(w / 2)
-        box1 = [round(w / 5), round(h / 4), bw, bh]
-        box2 = [round(w / 5 * 3), round(h / 4), bw, bh]
+        bw = round(w * 4 / 5)
+        bh = round(w / 3)
+        box1 = [round(w / 10), round(h / 12), bw, bh]
+        box2 = [round(w / 10), round(h / 12 * 7), bw, bh]
         return [box1, box2]
 
     @staticmethod
@@ -75,7 +75,12 @@ class ImageUtil:
         """
         w = image.width
         h = image.height
-        mask = Image.new('1', (w, h), 0)
+        mask = Image.new('1', (w, h), 1)
+
+        draw = ImageDraw.Draw(mask)
+        draw.rectangle([w / 10, h / 10, w * 9 / 10, h * 9 / 10], fill=0)
+        del draw
+
         return mask
 
     @staticmethod

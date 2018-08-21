@@ -1,36 +1,44 @@
 /**
- * The Takeoff Floor Plan component.
+ * The Takeoff Tiled Area component.
  */
-
 import * as React from 'react';
 import { Card, CardBody, CardHeader } from 'reactstrap';
 import * as lodash from 'lodash';
 
-import { addBase64ImagePrefix, getImageSize } from '../../util/Util';
-import { ITakeoffFloorPlanResponseJson, Service } from '../../util/Service';
+import { addBase64ImagePrefix, stripBase64ImagePrefix, getImageSize } from '../../util/Util';
+import { ITakeoffTiledAreaResponseJson, Service } from '../../util/Service';
 import { BaseProcessor, IBaseProcessorState } from '../base-processor/BaseProcessor';
 import SvgRect, { SvgRectData } from '../svg-rect/SvgRect';
 import { ISize, IPoint } from '../../util/CommonTypes';
 
-import './TakeoffFloorPlan.css';
+import './TakeoffTiledArea.css';
 
 // Component props
-interface ITakeoffFloorPlanProps {
+interface ITakeoffTiledAreaProps {
   takeoffId: string;
-  plan: ITakeoffFloorPlanResponseJson;
+  area: ITakeoffTiledAreaResponseJson;
+}
+
+/**
+ * Enumeration with tiled mas ediiting modes.
+ */
+enum TiledMaskModeEnum {
+  Add,
+  Subtract
 }
 
 // Component state
-interface ITakeoffFloorPlanState extends IBaseProcessorState {
+interface ITakeoffTiledAreaState extends IBaseProcessorState {
   scale: number;
   svgWidth: string;
   svgHeight: string;
-  bboxes: number[][];
+  tiledMask: string;
   isInDrawing: boolean;
+  mode: TiledMaskModeEnum;
   currentRect: IPoint[];
 }
 
-class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFloorPlanState> {
+class TakeoffTiledArea extends BaseProcessor<ITakeoffTiledAreaProps, ITakeoffTiledAreaState> {
   private svgElement: SVGElement;
   private containerDivElement: HTMLDivElement;
 
@@ -45,7 +53,7 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   public async componentDidMount() {
     super.componentDidMount();
 
-    this.setState({bboxes: this.props.plan.bboxes});
+    this.setState({tiledMask: this.props.area.tiled_mask});
 
     window.addEventListener('resize', this.debouncedResizehandler);
     document.addEventListener('mouseup', this.onMouseUp);
@@ -66,10 +74,10 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
     return (
       <Card className='w-100 mb-4'>
         <CardHeader className='pb-1'>
-          <h6>Page {this.props.plan.page_number}</h6>
+          <h6>Floor Plan {this.props.area.floor_plan_number}</h6>
         </CardHeader>
         <CardBody className='p-2'>
-          {this.renderPlan()}
+          {this.renderTiledArea()}
         </CardBody>
       </Card>
     );
@@ -78,27 +86,24 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   /**
    * Renders floor plan.
    */
-  private renderPlan(): JSX.Element | null {
+  private renderTiledArea(): JSX.Element | null {
     if (!this.state) {
       return null;
     }
 
-    const rects: SvgRectData[] = this.getSvgRectsByBbboxes();
-
     return (
       <div ref={this.setContainerDivRef} className='w-100 text-center'>
-        <svg className='takeoff-floor-plan-svg'
+        <svg className='takeoff-tiled-area-svg'
              style={{width: this.state.svgWidth, height: this.state.svgHeight}}
              ref={this.setSvgRef}
              onMouseDown={this.onMouseDown} onMouseMove={this.onMouseMove}>
              >
-          <image xlinkHref={addBase64ImagePrefix(this.props.plan.page_data)}
+          <image xlinkHref={addBase64ImagePrefix(this.props.area.plan)}
                  style={{width: this.state.svgWidth, height: this.state.svgHeight}}
           />
-
-          <svg>
-           {rects.map((rect) => <SvgRect key={rect.rectId} {...rect} />)}
-          </svg>
+          <image xlinkHref={addBase64ImagePrefix(this.state.tiledMask)}
+                 style={{width: this.state.svgWidth, height: this.state.svgHeight, opacity: 0.2}}
+          />
 
           {this.renderCurrentRect()}
         </svg>
@@ -126,39 +131,6 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   }
 
   /**
-   * Composes array of SvgRectData objects by the floor plan bboxes.
-   */
-  private getSvgRectsByBbboxes = (): SvgRectData[] => {
-    const scale: number = this.state.scale;
-    if (scale === undefined) {
-      return [];
-    }
-
-    return this.state.bboxes.map<SvgRectData>((bbox: [number], index: number): SvgRectData => {
-      const x = Math.round(bbox[0] * scale);
-      const y = Math.round(bbox[1] * scale);
-      const w = Math.round(bbox[2] * scale);
-      const h = Math.round(bbox[3] * scale);
-  
-      const onDeleteHandler: Function = 
-        (rectId: number) => { this.deleteBbox(rectId); };
-
-      return {
-        rectId: index,
-        x: x,
-        y: y,
-        w: w,
-        h: h,
-        color: 'blue',
-        noStroke: false,
-        opacity: 0.3,
-        cursor: 'default',
-        onDeleteHandler: onDeleteHandler
-      };
-    });    
-  }
-
-  /**
    * Renders rectangle we are drawing now.
    */
   private renderCurrentRect = (): JSX.Element | null => {
@@ -171,6 +143,7 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
     const y: number = Math.min(r[0].y, r[1].y);
     const w: number = Math.abs(r[0].x - r[1].x);
     const h: number = Math.abs(r[0].y - r[1].y);
+    const color: string = (this.state.mode === TiledMaskModeEnum.Add ? 'black' : 'white');
 
     const rect: SvgRectData = {
       rectId: -1,
@@ -178,9 +151,9 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       y: y,
       w: w,
       h: h,
-      color: 'blue',
-      noStroke: false,
-      opacity: 0.3,
+      color: color,
+      noStroke: true,
+      opacity: 0.2,
       cursor: 'default',
       onDeleteHandler: null
     };
@@ -191,36 +164,18 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   }
 
   /**
-   * Calls service to update bboxes after change.
+   * Calls service to update tiled are mask after change.
    */
-  private updateBboxes = () => {
+  private updateTiledAreaMask = () => {
     this.setOperationName('Saving bboxes');
 
-    new Service().setTakeoffFloorPlanBboxes(
+    new Service().setTakeoffTiledAreaMask(
       this.props.takeoffId,
-      this.props.plan.page_number,
-      this.state.bboxes,
+      this.props.area.floor_plan_number,
+      this.state.tiledMask,
       () => null,
       this.onServiceCallFailed
     );
-  }
-
-  /**
-   * Deletes bbox with the given index.
-   * 
-   * @param rectId - ID of the bbox rectangle (index in the bbox array)
-   */
-  private deleteBbox = (rectId: number) => {
-    this.setState(
-      (prevState: ITakeoffFloorPlanState) => {
-        const newBboxes: number[][] = prevState.bboxes.filter(
-          (_: number[], index: number): boolean => index !== rectId);
-        
-        return {...prevState, bboxes: newBboxes};
-      },
-      () => {
-        this.updateBboxes();
-      });
   }
 
   /**
@@ -242,7 +197,7 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       width: this.containerDivElement.getBoundingClientRect().width, 
       height: document.body.scrollHeight - 260 // This is a rough approximation of the viewport height we may use
     };
-    const imageSize = await getImageSize(this.props.plan.page_data);
+    const imageSize = await getImageSize(this.props.area.plan);
 
     const scaleX: number = divSize.width / imageSize.width;
     const scaleY: number = divSize.height / imageSize.height;
@@ -256,6 +211,15 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       svgWidth: `${width}px`,
       svgHeight: `${height}px`,
     });
+  }
+
+  /**
+   * Returns tiled mask editing mode.
+   * 
+   * @param mouseEvent Event details to analyze
+   */
+  private getTiledMaskMode = (mouseEvent: MouseEvent): TiledMaskModeEnum => {
+    return (mouseEvent.altKey ? TiledMaskModeEnum.Subtract : TiledMaskModeEnum.Add);
   }
 
   /**
@@ -273,14 +237,16 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
     }
 
     if (!this.state.isInDrawing) {
-        const point: IPoint = this.convertToRelative(mouseEvent);
-
-        this.setState((prevState: ITakeoffFloorPlanState) => {
-          return {
-            ...prevState, 
-            isInDrawing: true, 
-            currentRect: [point]};
-        });
+      const point: IPoint = this.convertToRelative(mouseEvent);
+      const mode: TiledMaskModeEnum = this.getTiledMaskMode(mouseEvent);
+          
+      this.setState((prevState: ITakeoffTiledAreaState) => {
+        return {
+          ...prevState, 
+          isInDrawing: true, 
+          mode: mode,
+          currentRect: [point]};
+      });
     }
   }
 
@@ -296,11 +262,13 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
   //tslint:enable
     if (this.state.isInDrawing) {
       const point: IPoint = this.convertToRelative(mouseEvent);
+      const mode: TiledMaskModeEnum = this.getTiledMaskMode(mouseEvent);
 
-      this.setState((prevState: ITakeoffFloorPlanState) => {
+      this.setState((prevState: ITakeoffTiledAreaState) => {
         return {
           ...prevState, 
           isInDrawing: true, 
+          mode: mode,
           currentRect: prevState.currentRect.slice(0, 1).concat(point)};
       });
     }
@@ -313,14 +281,14 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
    * requires MouseEvent<SVGElement> type and the compiler says MouseEvent 
    * is not a genertic type.
    */
-  private onMouseUp = (mouseEvent: MouseEvent): void => {
+  private onMouseUp = async (mouseEvent: MouseEvent) => {
     if (mouseEvent.button !== 0) {
         return;
     }
-
-    let bboxAdded = false;
+    let maskUpdated = false;
     if (this.state.isInDrawing &&
         (this.state.currentRect.length === 2)) {
+      const mode: TiledMaskModeEnum = this.getTiledMaskMode(mouseEvent);
       const scale: number = this.state.scale;
       const r: IPoint[] = this.state.currentRect;
       const x: number = Math.round(Math.min(r[0].x, r[1].x) / scale);
@@ -328,30 +296,18 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       const w: number = Math.round(Math.abs(r[0].x - r[1].x) / scale);
       const h: number = Math.round(Math.abs(r[0].y - r[1].y) / scale);
 
-      // Check if added bbox is large enough
-      // Helps to avoid "new rectangle iis added when a delete icon for existing one clicked" mess
+      // Check if new rectangle is large enough
       if (w > 2 && h > 2) {
-        bboxAdded = true;
+        maskUpdated = true;
 
-        this.setState(
-          (prevState: ITakeoffFloorPlanState) => {
-            const newBbox = [x, y, w, h];
-            const newBboxes = prevState.bboxes.concat([newBbox]);
-
-            return {
-              ...prevState, 
-              bboxes: newBboxes,
-              isInDrawing: false, 
-              currentRect: []};
-            },
-          () => {
-            this.updateBboxes();
-          });
+        const maskPatchRectangle: number[] = [x, y, w, h];
+        await this.patchTiledMask(
+          this.state.tiledMask, maskPatchRectangle, mode);
       }
     }
 
-    if (!bboxAdded) {
-      this.setState((prevState: ITakeoffFloorPlanState) => {
+    if (!maskUpdated) {
+      this.setState((prevState: ITakeoffTiledAreaState) => {
         return {
           ...prevState, 
           isInDrawing: false, 
@@ -359,7 +315,7 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       });
     }
   }
-
+  
   /**
    * Converts mouse event cordinates to relative ones against SVG.
    * 
@@ -373,6 +329,50 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
           y: mouseEvent.clientY - boundingRect.top,
       };
   }
+
+  /**
+   * Adds or substracts rectangle from the mask.
+   * 
+   * @param tiledMask tiled mask to update
+   * @param rect rectangle to add or update ([x, y, w, h])
+   * @param mode patch mode (add or subtract)
+   */
+  private patchTiledMask = async (
+    tiledMask: string, 
+    rect: number[], 
+    mode: TiledMaskModeEnum) => {
+
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
+    const url = addBase64ImagePrefix(tiledMask);
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {    
+      const w: number = img.width;
+      const h: number = img.height;
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h);
+      const color: string = (mode === TiledMaskModeEnum.Add ? 'black' : 'white');
+      ctx.fillStyle = color;
+      ctx.fillRect(rect[0], rect[1], rect[2], rect[3]);
+      
+      const newTiledMask: string = stripBase64ImagePrefix(canvas.toDataURL());
+
+      this.setState(
+        (prevState: ITakeoffTiledAreaState) => {
+          return {
+            ...prevState, 
+            tiledMask: newTiledMask,
+            isInDrawing: false, 
+            currentRect: []};
+        },
+        () => {
+          this.updateTiledAreaMask();
+        }
+      );
+    };
+  }
 }
 
-export default TakeoffFloorPlan;
+export default TakeoffTiledArea;

@@ -24,23 +24,23 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
     }
 
     return (
-      <Container className='pt-2 pb-2 mw-100 takeoff_floor-plan-list-container'>
+      <Container className='pt-2 pb-2 mw-100 takeoff-floor-plan-list-container'>
         <Card className='w-100 h-100'>
           <CardHeader className='pb-1'>
             <Row>
-              <Col className='col-3 mt-1'>
-                <h4>Takeoff Floor Plan List</h4>
+              <Col className='col-3 mt-1 pr-0'>
+                <h5>Takeoff Floor Plan List</h5>
               </Col>
-              <Col className='col-6 text-center'>
-                <Alert type='info' className='m-0 p-1 takeoff-floor-plan-description'>
+              <Col className='col-6 text-center pl-0 pr-0'>
+                <Alert type='info' className='m-0 p-1 pl-2 pr-2 takeoff-floor-plan-description'>
                   Review detected pages and plans.
-                  If there are any plans missing you can manually add more by clicking on the images.<br/>
-                  You can also delete a plan by clicking on x in the top right corner.
+                  If there are any plans missing you can manually add more by clicking on the images. 
+                  You can also delete a plan by clicking on (X) in the top right corner.
                 </Alert>
               </Col>
-              <Col className='col-3'>
+              <Col className='col-3 pl-1'>
                 <Row>
-                  <Col className='col-7 text-right mt-2'>
+                  <Col className='col-7 text-right mt-2 pr-0'>
                     <h6 className='pb-2'>Floor plans are defined?</h6>
                   </Col>
                   <Col className='col-5'>
@@ -52,7 +52,7 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
               </Col>
             </Row>
           </CardHeader>
-          <CardBody className='takeoff_floor-plan-list-cardbody'>
+          <CardBody className='takeoff-floor-plan-list-cardbody'>
             {this.renderList()}
           </CardBody>
         </Card>

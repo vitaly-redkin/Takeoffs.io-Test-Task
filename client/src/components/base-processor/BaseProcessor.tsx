@@ -75,4 +75,14 @@ export class BaseProcessor<TProps, TState extends IBaseProcessorState>
   public stopProcessing = (): void => {
     this.setState({isProcessing: false, operationName: null});
   }
+
+  /**
+   * Serts current operation name.
+   * Used when we do not want to update component visual state when processing is running.
+   * 
+   * @param operationName Name of the current operation
+   */
+  public setOperationName = (operationName: string): void => {
+    this.setState({operationName});
+  }
 }

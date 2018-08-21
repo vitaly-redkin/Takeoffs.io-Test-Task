@@ -1,6 +1,5 @@
 import random
 import datetime
-import pymongo
 
 import config
 from .mongo_util import MongoUtil
@@ -88,6 +87,7 @@ class Takeoff:
         """
         return Takeoff.set_array_element(
             takeoff_id,
+            'pages',
             'bboxes',
             bboxes,
             'page_number',
@@ -121,6 +121,7 @@ class Takeoff:
         """
         return Takeoff.set_array_element(
             takeoff_id,
+            'floor_plans',
             'tiled_mask',
             tiled_mask,
             'floor_plan_number',
@@ -204,11 +205,11 @@ class Takeoff:
                     }
                 )
 
-                """
+
                 plan_image.save('%s/%s_%s_%s.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
                 tiled_mask.save(
                     '%s/%s_%s_%s_mask.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
-                """
+
 
     def _generate_step_status(self):
         """
@@ -258,6 +259,7 @@ class Takeoff:
     def set_array_element(
             takeoff_id,
             array_field_name,
+            field_to_set,
             value_to_set,
             array_key_name,
             array_key_value
@@ -267,6 +269,7 @@ class Takeoff:
 
         :param string takeoff_id: ID of the takeoff
         :param string array_field_name: name of the Takeoff array field to update element in
+        :param string field_to_set: name of the array element field to set
         :param object value_to_set: value to set
         :param string array_key_name: name of the key field in the array element objects (the one to search for)
         :param object array_key_value: value to search for in the array elements
@@ -277,7 +280,7 @@ class Takeoff:
                 '_id': takeoff_id
             },
             {
-                '$set': {'pages.$[elem].%s' % array_field_name: value_to_set}
+                '$set': {'%s.$[elem].%s' % (array_field_name, field_to_set): value_to_set}
             },
             array_filters=[
                 {
@@ -287,7 +290,7 @@ class Takeoff:
         )
         if doc is None:
             return None
-        if doc.matched_count != 1 and doc.modified_count == 0:
+        if doc.matched_count != 1 or doc.modified_count == 0:
             return None
 
         return {

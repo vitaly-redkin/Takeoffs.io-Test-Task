@@ -13,6 +13,8 @@ export type SvgRectData = {
   w: number;
   h: number;
   color: string;
+  noStroke: boolean;
+  opacity: number;
   cursor: string;
   onDeleteHandler: Function | null;
 };
@@ -23,6 +25,7 @@ class SvgRect extends React.PureComponent<SvgRectData> {
     const y = this.props.y;
     const w = this.props.w;
     const h = this.props.h;
+    const strokeWidth: number = (this.props.noStroke ? 0 : 1);
 
     return (
       <g>
@@ -30,7 +33,10 @@ class SvgRect extends React.PureComponent<SvgRectData> {
               y={y}
               width={w}
               height={h}
-              stroke='black' fill={this.props.color} strokeWidth='2' fillOpacity='0.3'
+              stroke='black' 
+              fill={this.props.color} 
+              strokeWidth={strokeWidth}
+              fillOpacity={this.props.opacity}
               style={{ cursor: this.props.cursor }} />
         {this.renderDelete(x, y, w)}
       </g>

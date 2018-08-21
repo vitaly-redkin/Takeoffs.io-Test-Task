@@ -154,7 +154,7 @@ export class Service {
         onError: Function
     ): void {
         const endpoint: string = 
-            `${composeTakeOffPath('/status/:takeoffId/tiledMasks', takeoffId)}/${floorPlanNumber}`;
+            `${composeTakeOffPath('/status/:takeoffId/tiled_areas', takeoffId)}/${floorPlanNumber}`;
         const data: ITakeoffTiledAreaPayload = {tiled_mask: tiledMask};
         this.callApi<ITakeoffTiledAreaPayload, IUpdateResponseJson>(
             endpoint,

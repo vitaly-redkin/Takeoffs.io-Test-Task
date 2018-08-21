@@ -9,7 +9,7 @@ export enum AppRoutes {
   TakeoffNew = '/',
   TakeoffStatus = '/takeoff/:takeoffId/',
   TakeoffFloorPlans = '/takeoff/:takeoffId/floor_plans',
-  TakeoffTiledAreas = '/takeoff/:takeoffId/tiledAreas',
+  TakeoffTiledAreas = '/takeoff/:takeoffId/tiled_areas',
   TakeoffComplete = '/takeoff/:takeoffId/complete',
 }
   
