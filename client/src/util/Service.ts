@@ -101,7 +101,7 @@ export class Service {
     public setTakeoffFloorPlanBboxes(
         takeoffId: string,
         pageNumber: number,
-        bboxes: [[number]],
+        bboxes: [number][],
         onSuccess: Function,
         onError: Function
     ): void {
@@ -281,7 +281,7 @@ export interface ITakeoffStatusStepResponseJson {
 export interface ITakeoffFloorPlanResponseJson {
     page_number: number;
     page_data: string;
-    bboxes: [[number]];
+    bboxes: [number][];
 }
 
 /**
@@ -295,7 +295,7 @@ export interface IUpdateResponseJson {
  * Interface for the /status/:takeoff_id/floor_plan/:page_number endpoint payload.
  */
 interface ITakeoffFloorPlanPayload {
-    bboxes: [[number]];
+    bboxes: [number][];
 }
 
 /**

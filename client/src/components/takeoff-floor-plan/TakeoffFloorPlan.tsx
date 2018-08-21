@@ -9,6 +9,7 @@ import * as lodash from 'lodash';
 import { addBase64ImagePrefix, getImageSize } from '../../util/Util';
 import { ITakeoffFloorPlanResponseJson } from '../../util/Service';
 import { BaseProcessor, IBaseProcessorState } from '../base-processor/BaseProcessor';
+import SvgRect, { SvgRectData } from '../svg-rect/SvgRect';
 
 import './TakeoffFloorPlan.css';
 import { ISize } from '../../util/CommonTypes';
@@ -24,6 +25,7 @@ interface ITakeoffFloorPlanState extends IBaseProcessorState {
   scale: number;
   svgWidth: string;
   svgHeight: string;
+  bboxes: [number][];
 }
 
 class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFloorPlanState> {
@@ -40,7 +42,9 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
    */
   public async componentDidMount() {
     super.componentDidMount();
+
     window.addEventListener('resize', this.debouncedResizehandler);
+    this.setState({bboxes: this.props.plan.bboxes});
   }
 
   /**
@@ -74,18 +78,60 @@ class TakeoffFloorPlan extends BaseProcessor<ITakeoffFloorPlanProps, ITakeoffFlo
       return null;
     }
 
+    const rects: SvgRectData[] = this.getSvgRectsByBbboxes();
+
     return (
       <div ref={this.setContainerDivRef} className='w-100 text-center'>
         <svg className='takeoff-floor-plan-svg'
              style={{width: this.state.svgWidth, height: this.state.svgHeight}}>
-            <image className='takeoff-floor-plan-image' 
-                   xlinkHref={addBase64ImagePrefix(this.props.plan.page_data)}
-                   ref={this.setImageRef}
-                   style={{width: this.state.svgWidth, height: this.state.svgHeight}}
-            />
+          <image className='takeoff-floor-plan-image' 
+                  xlinkHref={addBase64ImagePrefix(this.props.plan.page_data)}
+                  ref={this.setImageRef}
+                  style={{width: this.state.svgWidth, height: this.state.svgHeight}}
+          />
+
+          <svg>
+           {rects.map((rect) => <SvgRect key={rect.rectId} {...rect} />)}
+          </svg>
         </svg>
       </div>
     );
+  }
+
+  /**
+   * Composes array of SvgRectData objects by the floor plan bboxes.
+   */
+  private getSvgRectsByBbboxes = (): SvgRectData[] => {
+    const scale: number = this.state.scale;
+    if (scale === undefined) {
+      return [];
+    }
+
+    return this.state.bboxes.map<SvgRectData>((bbox: [number], index: number): SvgRectData => {
+      const onDeleteHandler: Function = 
+        (rectId: number) => { this.deleteBbox(rectId); };
+
+      return {
+        rectId: index,
+        x: bbox[0],
+        y: bbox[1],
+        w: bbox[2],
+        h: bbox[3],
+        scale: scale,
+        color: 'blue',
+        cursor: 'default',
+        onDeleteHandler: onDeleteHandler
+      };
+    });    
+  }
+
+  private deleteBbox = (rectId: number) => {
+    this.setState((prevState: ITakeoffFloorPlanState) => {
+      const newBboxes = prevState.bboxes.filter(
+        (_: [number], index: number): boolean => index !== rectId);
+
+      return {...prevState, bboxes: newBboxes};
+    });
   }
 
   /**
