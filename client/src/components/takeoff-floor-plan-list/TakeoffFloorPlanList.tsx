@@ -4,7 +4,7 @@
 
 import * as React from 'react';
 import { withRouter } from 'react-router-dom';
-import { Button, Container, Card, CardBody, CardHeader, Row, Col } from 'reactstrap';
+import { Alert, Button, Container, Card, CardBody, CardHeader, Row, Col } from 'reactstrap';
 
 import { AppRoutes, composeTakeOffPath } from '../../util/AppRoutes';
 import { Service, ITakeoffFloorPlanResponseJson } from '../../util/Service';
@@ -28,8 +28,15 @@ class TakeoffFloorPlanList extends BaseTakeoffComponent<[ITakeoffFloorPlanRespon
         <Card className='w-100 h-100'>
           <CardHeader className='pb-1'>
             <Row>
-              <Col className='col-9 mt-1'>
+              <Col className='col-3 mt-1'>
                 <h4>Takeoff Floor Plan List</h4>
+              </Col>
+              <Col className='col-6 text-center'>
+                <Alert type='info' className='m-0 p-1 takeoff-floor-plan-description'>
+                  Review detected pages and plans.
+                  If there are any plans missing you can manually add more by clicking on the images.<br/>
+                  You can also delete a plan by clicking on x in the top right corner.
+                </Alert>
               </Col>
               <Col className='col-3'>
                 <Row>

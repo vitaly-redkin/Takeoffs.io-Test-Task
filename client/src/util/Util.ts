@@ -3,7 +3,7 @@
  */
 
 import { Consts } from './Consts';
-import { ImageSize } from './CommonTypes';
+import { ISize } from './CommonTypes';
 
 /**
  * Checks if the file has a valid MIME type
@@ -78,10 +78,10 @@ function accepts(file: File, acceptedFiles: string): boolean {
  * @param base64 Base64 encoded PNG image (with prefix)
  * @returns promise with the give image size
  */
-export async function getImageSize(base64: string): Promise<ImageSize> {
+export async function getImageSize(base64: string): Promise<ISize> {
   const src: string = addBase64ImagePrefix(base64);
 
-  return new Promise<ImageSize> ((resolved: Function) => {
+  return new Promise<ISize> ((resolved: Function) => {
     const img = new Image();
     img.onload = () => {
       resolved({width: img.width, height: img.height});

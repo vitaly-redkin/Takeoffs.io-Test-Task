@@ -27,9 +27,9 @@ interface IDummyProps {
 export type RouteComponentDummyProps = RouteComponentProps<IDummyProps>;
 
 /**
- * Image size.
+ * DOM element size.
  */
-export interface ImageSize {
+export interface ISize {
     width: number;
     height: number;
 }
