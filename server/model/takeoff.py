@@ -292,7 +292,7 @@ class Takeoff:
         )
         if doc is None:
             return None
-        if doc.matched_count != 1 or doc.modified_count == 0:
+        if doc.matched_count != 1:
             return None
 
         return {
