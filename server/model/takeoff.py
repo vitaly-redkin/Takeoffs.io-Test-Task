@@ -207,10 +207,11 @@ class Takeoff:
                     }
                 )
 
-
+                """    
                 plan_image.save('%s/%s_%s_%s.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
                 tiled_mask.save(
                     '%s/%s_%s_%s_mask.png' % (config.DEBUG_OUTPUT_FOLDER, self.takeoff_id, page_number, bbox))
+                """
 
 
     def _generate_step_status(self):
