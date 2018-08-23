@@ -144,6 +144,7 @@ class TakeoffTiledArea extends BaseProcessor<ITakeoffTiledAreaProps, ITakeoffTil
     const w: number = Math.abs(r[0].x - r[1].x);
     const h: number = Math.abs(r[0].y - r[1].y);
     const color: string = (this.state.mode === TiledMaskModeEnum.Add ? 'black' : 'white');
+    const opacity: number = (this.state.mode === TiledMaskModeEnum.Add ? 0.2 : 0.5);
 
     const rect: SvgRectData = {
       rectId: -1,
@@ -153,7 +154,7 @@ class TakeoffTiledArea extends BaseProcessor<ITakeoffTiledAreaProps, ITakeoffTil
       h: h,
       color: color,
       noStroke: true,
-      opacity: 0.2,
+      opacity: opacity,
       cursor: 'default',
       onDeleteHandler: null
     };
@@ -167,7 +168,7 @@ class TakeoffTiledArea extends BaseProcessor<ITakeoffTiledAreaProps, ITakeoffTil
    * Calls service to update tiled are mask after change.
    */
   private updateTiledAreaMask = () => {
-    this.setOperationName('Saving bboxes');
+    this.setOperationName('Saving tiled area');
 
     new Service().setTakeoffTiledAreaMask(
       this.props.takeoffId,
