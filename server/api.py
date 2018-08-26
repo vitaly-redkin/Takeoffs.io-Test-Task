@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -71,5 +72,8 @@ def handle_root_exception(error):
     return (s, code, [('Content-Type', 'application/json')])
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+    #app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)    
