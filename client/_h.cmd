@@ -1,5 +1,5 @@
 #git init
-#heroku git:remote -a takeoffs-api
+#heroku git:remote -a takeoffs-ui
 
 @git add .
 @git commit -m "next commit"
